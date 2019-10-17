@@ -1,0 +1,17 @@
+[Unit]
+Description=Manjaro News server
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=www-data
+ExecStart=/usr/local/bin/mnserver
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=mnserver
+
+[Install]
+WantedBy=multi-user.target
