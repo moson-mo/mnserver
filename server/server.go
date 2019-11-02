@@ -68,6 +68,9 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ts := a[0:max]
+	sort.Slice(ts, func(i, j int) bool {
+		return ts[i].PublishedDate.Unix() < ts[j].PublishedDate.Unix()
+	})
 	b, err := json.MarshalIndent(&ts, "", "    ")
 	if err != nil {
 		w.WriteHeader(500)
