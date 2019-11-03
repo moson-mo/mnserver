@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/gocolly/colly"
 
 	"github.com/mmcdole/gofeed"
 )
@@ -28,12 +32,16 @@ var (
 	parser   *gofeed.Parser
 	articles []article
 	mut      sync.Mutex
+	c        *colly.Collector
 )
 
 // Start starts the service
-func Start(feedURL string, refreshInterval int) {
+func Start(feedURL, twitterURL string, refreshInterval int) {
 	parser = gofeed.NewParser()
-	go getNewsLoop(feedURL, time.Duration(refreshInterval)*time.Second)
+	c = colly.NewCollector()
+
+	registerAppendTwitterNews()
+	go getNewsLoop(feedURL, twitterURL, time.Duration(refreshInterval)*time.Second)
 
 	http.HandleFunc("/news", handleRequest)
 	err := http.ListenAndServe(":10111", nil)
@@ -110,12 +118,14 @@ func containsCategory(a article, cats []string) bool {
 }
 
 // runs news download function in loop after a certain interval
-func getNewsLoop(url string, refreshInterval time.Duration) {
+func getNewsLoop(url, twitterURL string, refreshInterval time.Duration) {
 	getNews(url)
+	getTwitterNews(twitterURL)
 
 	for {
 		<-time.After(refreshInterval)
 		getNews(url)
+		getTwitterNews(twitterURL)
 	}
 }
 
@@ -144,6 +154,51 @@ func getNews(url string) {
 			print("New article added: " + e.Title)
 		}
 	}
+}
+
+// get latest news from twitter
+func getTwitterNews(url string) {
+	print("Getting news from twitter...")
+	c.Visit(url)
+}
+
+// register function which is executed when finding a tweet in our html doc
+func registerAppendTwitterNews() {
+	// for each tweet element
+	c.OnHTML("li[id^='stream-item-tweet']", func(e *colly.HTMLElement) {
+		id := e.Attr("data-item-id")
+
+		if articleExits(id) {
+			return
+		}
+
+		ti, err := strconv.ParseInt(e.ChildAttr("span._timestamp", "data-time"), 10, 64)
+		if err != nil {
+			print("Error converting timestamp: " + err.Error())
+		}
+		t := time.Unix(ti, 0)
+
+		txt := e.ChildText(".js-tweet-text-container")
+		maxLen := 80
+
+		if len(txt) > maxLen {
+			txt = txt[0:maxLen] + "..."
+		}
+
+		a := article{
+			GUID:          id,
+			URL:           "https://twitter.com" + e.ChildAttr("div.tweet", "data-permalink-path"),
+			Title:         "[Twitter] " + strings.Replace(txt, "\n", " ", -1),
+			PublishedDate: t,
+			Category:      "Twitter",
+		}
+
+		mut.Lock()
+		articles = append(articles, a)
+		mut.Unlock()
+
+		print("New article added: " + a.Title)
+	})
 }
 
 // checks if our list already contains an article
