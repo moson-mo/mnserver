@@ -38,7 +38,7 @@ var (
 // Start starts the service
 func Start(feedURL, twitterURL string, refreshInterval int) {
 	parser = gofeed.NewParser()
-	c = colly.NewCollector()
+	c = colly.NewCollector(colly.AllowURLRevisit())
 
 	registerAppendTwitterNews()
 	go getNewsLoop(feedURL, twitterURL, time.Duration(refreshInterval)*time.Second)
@@ -159,7 +159,10 @@ func getNews(url string) {
 // get latest news from twitter
 func getTwitterNews(url string) {
 	print("Getting news from twitter...")
-	c.Visit(url)
+	err := c.Visit(url)
+	if err != nil {
+		print(err.Error())
+	}
 }
 
 // register function which is executed when finding a tweet in our html doc
