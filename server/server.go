@@ -134,6 +134,7 @@ func getNews(url string) {
 	feed, err := parser.ParseURL(url)
 	if err != nil {
 		print("Error parsing news: " + err.Error())
+		return
 	}
 
 	print("Getting news from feed...")
