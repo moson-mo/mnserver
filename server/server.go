@@ -119,12 +119,24 @@ func containsCategory(a article, cats []string) bool {
 
 // runs news download function in loop after a certain interval
 func getNewsLoop(url, twitterURL string, refreshInterval time.Duration) {
-	getNews(url)
+
+	urls := strings.Split(url, ";")
+
+	for _, u := range urls {
+		if u != "" {
+			getNews(u)
+		}
+	}
+
 	getTwitterNews(twitterURL)
 
 	for {
 		<-time.After(refreshInterval)
-		getNews(url)
+		for _, u := range urls {
+			if u != "" {
+				getNews(u)
+			}
+		}
 		getTwitterNews(twitterURL)
 	}
 }
@@ -137,7 +149,7 @@ func getNews(url string) {
 		return
 	}
 
-	print("Getting news from feed...")
+	print("Getting news from feed: " + url)
 
 	for _, e := range feed.Items {
 		if !articleExits(e.GUID) {
@@ -147,6 +159,9 @@ func getNews(url string) {
 				Title:         e.Title,
 				Category:      e.Categories[0],
 				PublishedDate: *e.PublishedParsed,
+			}
+			if a.Category == "Announcements" && strings.Contains(url, "arm") {
+				a.Category = "ARM Announcements"
 			}
 
 			mut.Lock()
