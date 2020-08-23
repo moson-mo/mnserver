@@ -27,4 +27,5 @@ Run `go build` in the mnserver directory or use the build script `build.sh`
 ## Libraries used
 
 * [gofeed](https://github.com/mmcdole/gofeed) - RSS/Atom feed parser
+* [twitter-scraper](https://github.com/n0madic/twitter-scraper) - Twitter scraper
 

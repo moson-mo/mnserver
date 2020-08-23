@@ -1,16 +1,16 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/gocolly/colly"
+	twitterscraper "github.com/n0madic/twitter-scraper"
 
 	"github.com/mmcdole/gofeed"
 )
@@ -32,16 +32,13 @@ var (
 	parser   *gofeed.Parser
 	articles []article
 	mut      sync.Mutex
-	c        *colly.Collector
 )
 
 // Start starts the service
-func Start(feedURL, twitterURL string, refreshInterval int) {
+func Start(feedURL string, refreshInterval int) {
 	parser = gofeed.NewParser()
-	c = colly.NewCollector(colly.AllowURLRevisit())
 
-	registerAppendTwitterNews()
-	go getNewsLoop(feedURL, twitterURL, time.Duration(refreshInterval)*time.Second)
+	go getNewsLoop(feedURL, time.Duration(refreshInterval)*time.Second)
 
 	http.HandleFunc("/news", handleRequest)
 	err := http.ListenAndServe(":10111", nil)
@@ -118,7 +115,7 @@ func containsCategory(a article, cats []string) bool {
 }
 
 // runs news download function in loop after a certain interval
-func getNewsLoop(url, twitterURL string, refreshInterval time.Duration) {
+func getNewsLoop(url string, refreshInterval time.Duration) {
 
 	urls := strings.Split(url, ";")
 
@@ -128,7 +125,7 @@ func getNewsLoop(url, twitterURL string, refreshInterval time.Duration) {
 		}
 	}
 
-	getTwitterNews(twitterURL)
+	getTwitterNews()
 
 	for {
 		<-time.After(refreshInterval)
@@ -137,7 +134,7 @@ func getNewsLoop(url, twitterURL string, refreshInterval time.Duration) {
 				getNews(u)
 			}
 		}
-		getTwitterNews(twitterURL)
+		getTwitterNews()
 	}
 }
 
@@ -160,8 +157,13 @@ func getNews(url string) {
 				Category:      e.Categories[0],
 				PublishedDate: *e.PublishedParsed,
 			}
+
 			if a.Category == "Announcements" && strings.Contains(url, "arm") {
 				a.Category = "ARM Announcements"
+			} else if a.Category == "News" && strings.Contains(url, "arm") {
+				a.Category = "ARM Announcements"
+			} else if strings.Contains(url, "arm") {
+				a.Category = "ARM " + a.Category
 			}
 
 			mut.Lock()
@@ -173,42 +175,30 @@ func getNews(url string) {
 }
 
 // get latest news from twitter
-func getTwitterNews(url string) {
+func getTwitterNews() {
 	print("Getting news from twitter...")
-	err := c.Visit(url)
-	if err != nil {
-		print(err.Error())
-	}
-}
-
-// register function which is executed when finding a tweet in our html doc
-func registerAppendTwitterNews() {
-	// for each tweet element
-	c.OnHTML("li[id^='stream-item-tweet']", func(e *colly.HTMLElement) {
-		id := e.Attr("data-item-id")
-
-		if articleExits(id) {
-			return
+	for tweet := range twitterscraper.SearchTweets(context.Background(), "from:ManjaroLinux", 20) {
+		if tweet.Error != nil {
+			print(tweet.Error.Error())
+			continue
 		}
 
-		ti, err := strconv.ParseInt(e.ChildAttr("span._timestamp", "data-time"), 10, 64)
-		if err != nil {
-			print("Error converting timestamp: " + err.Error())
+		if articleExits(tweet.ID) {
+			continue
 		}
-		t := time.Unix(ti, 0)
 
-		txt := e.ChildText(".js-tweet-text-container")
 		maxLen := 80
+		txt := tweet.Text
 
 		if len(txt) > maxLen {
 			txt = txt[0:maxLen] + "..."
 		}
 
 		a := article{
-			GUID:          id,
-			URL:           "https://twitter.com" + e.ChildAttr("div.tweet", "data-permalink-path"),
+			GUID:          tweet.ID,
+			URL:           tweet.PermanentURL,
 			Title:         "[Twitter] " + strings.Replace(txt, "\n", " ", -1),
-			PublishedDate: t,
+			PublishedDate: tweet.TimeParsed,
 			Category:      "Twitter",
 		}
 
@@ -217,7 +207,7 @@ func registerAppendTwitterNews() {
 		mut.Unlock()
 
 		print("New article added: " + a.Title)
-	})
+	}
 }
 
 // checks if our list already contains an article
