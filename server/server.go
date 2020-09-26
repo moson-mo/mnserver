@@ -158,11 +158,7 @@ func getNews(url string) {
 				PublishedDate: *e.PublishedParsed,
 			}
 
-			if a.Category == "Announcements" && strings.Contains(url, "arm") {
-				a.Category = "ARM Announcements"
-			} else if a.Category == "News" && strings.Contains(url, "arm") {
-				a.Category = "ARM Announcements"
-			} else if strings.Contains(url, "arm") {
+			if strings.Contains(url, "arm") {
 				a.Category = "ARM " + a.Category
 			}
 
