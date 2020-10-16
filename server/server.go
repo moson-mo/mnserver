@@ -173,7 +173,7 @@ func getNews(url string) {
 // get latest news from twitter
 func getTwitterNews() {
 	print("Getting news from twitter...")
-	for tweet := range twitterscraper.SearchTweets(context.Background(), "from:ManjaroLinux", 20) {
+	for tweet := range twitterscraper.GetTweets(context.Background(), "ManjaroLinux", 20) {
 		if tweet.Error != nil {
 			print(tweet.Error.Error())
 			continue

@@ -32,6 +32,8 @@ github.com/n0madic/twitter-scraper v0.0.0-20200813144124-64e5fa242515 h1:TU2qnSf
 github.com/n0madic/twitter-scraper v0.0.0-20200813144124-64e5fa242515/go.mod h1:VZADi02o1/HsNTTCPqT8kFK+RGwzVdYVdpatmzJ6Ap4=
 github.com/n0madic/twitter-scraper v0.0.0-20200922071751-0edd067ca37d h1:jSdgM66gyKuBEX/UQUr+MA38ZyFmBGj2e6onIZvdnN4=
 github.com/n0madic/twitter-scraper v0.0.0-20200922071751-0edd067ca37d/go.mod h1:VZADi02o1/HsNTTCPqT8kFK+RGwzVdYVdpatmzJ6Ap4=
+github.com/n0madic/twitter-scraper v0.0.0-20201012064956-48bfdb661867 h1:X4ovGDRUmCkvcV/+C6VKo+88+5kS4fSaaegKhG0VN7U=
+github.com/n0madic/twitter-scraper v0.0.0-20201012064956-48bfdb661867/go.mod h1:VZADi02o1/HsNTTCPqT8kFK+RGwzVdYVdpatmzJ6Ap4=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca h1:NugYot0LIVPxTvN8n+Kvkn6TrbMyxQiuvKdEwFdR9vI=
 github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca/go.mod h1:uugorj2VCxiV1x+LzaIdVa9b4S4qGAcH6cbhh4qVxOU=
