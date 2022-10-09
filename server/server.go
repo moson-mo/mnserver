@@ -31,7 +31,7 @@ type article struct {
 var (
 	parser   *gofeed.Parser
 	articles []article
-	mut      sync.Mutex
+	mut      sync.RWMutex
 )
 
 // Start starts the service
@@ -66,7 +66,10 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	mut.RLock()
 	a := getArticlesWithCategories(cs.Categories)
+	mut.RUnlock()
+
 	max := len(a)
 	if cs.MaxItems < max {
 		max = cs.MaxItems

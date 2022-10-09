@@ -1,6 +1,6 @@
 # mnserver - REST API service providing Manjaro Linux announcements
 
-A small http server which delivers Manjaro announcements for the systray application (see mntray repo).
+A small http server which delivers Manjaro announcements for the systray application (see matray repo).
 It parses the Manjaro Linux announcements RSS feed in a regular interval. Clients can grab news articles from the server via http post request.
 
 ## Installation
