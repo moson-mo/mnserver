@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -35,13 +36,13 @@ var (
 )
 
 // Start starts the service
-func Start(feedURL string, refreshInterval int) {
+func Start(feedURL string, refreshInterval, port int) {
 	parser = gofeed.NewParser()
 
 	go getNewsLoop(feedURL, time.Duration(refreshInterval)*time.Second)
 
 	http.HandleFunc("/news", handleRequest)
-	err := http.ListenAndServe(":10111", nil)
+	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	if err != nil {
 		print("Error starting http server: " + err.Error())
 		return
