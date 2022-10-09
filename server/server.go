@@ -86,7 +86,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	print("Client fetched news")
+	// print("Client fetched news")
 	w.Write(b)
 }
 
