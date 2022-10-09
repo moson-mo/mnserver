@@ -9,7 +9,7 @@ Make sure go is installed on your system.
 
 Install with:
 ```
-go get github.com/moson-mo/mnserver
+go install github.com/moson-mo/mnserver@latest
 ```
 
 Run with:
