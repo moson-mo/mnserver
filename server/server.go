@@ -42,6 +42,7 @@ func Start(feedURL string, refreshInterval, port int) {
 	go getNewsLoop(feedURL, time.Duration(refreshInterval)*time.Second)
 
 	http.HandleFunc("/news", handleRequest)
+	http.HandleFunc("/", handleRequest)
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	if err != nil {
 		print("Error starting http server: " + err.Error())
