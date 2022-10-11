@@ -29,6 +29,8 @@ type article struct {
 	PublishedDate time.Time `json:"PublishedDate"`
 }
 
+const maxLen = 80
+
 var (
 	parser   *gofeed.Parser
 	articles []article
@@ -167,10 +169,14 @@ func getNews(url string) {
 				a.Category = "ARM " + a.Category
 			}
 
+			if len(a.Title) > maxLen {
+				a.Title = a.Title[0:maxLen] + "..."
+			}
+
 			mut.Lock()
 			articles = append(articles, a)
 			mut.Unlock()
-			print("New article added: " + e.Title)
+			print("New article added: " + a.Title)
 		}
 	}
 }
@@ -188,17 +194,14 @@ func getTwitterNews() {
 			continue
 		}
 
-		maxLen := 80
-		txt := tweet.Text
-
-		if len(txt) > maxLen {
-			txt = txt[0:maxLen] + "..."
+		if len(tweet.Text) > maxLen {
+			tweet.Text = tweet.Text[0:maxLen] + "..."
 		}
 
 		a := article{
 			GUID:          tweet.ID,
 			URL:           tweet.PermanentURL,
-			Title:         "[Twitter] " + strings.Replace(txt, "\n", " ", -1),
+			Title:         "[Twitter] " + strings.Replace(tweet.Text, "\n", " ", -1),
 			PublishedDate: tweet.TimeParsed,
 			Category:      "Twitter",
 		}
